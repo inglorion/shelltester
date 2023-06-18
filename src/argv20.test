@@ -1,0 +1,70 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests ${1} through ${20}.
+#
+# Note that, per The Open Group Base Specifications Issue 7, 2018 edition,
+# "When a positional parameter with more than one digit is specified,
+# the application shall enclose the digits in braces"
+
+set -e
+. ./config
+
+cat >argv20.sh <<'EOT'
+printf '%s\n' "${1}"
+printf '%s\n' "${2}"
+printf '%s\n' "${3}"
+printf '%s\n' "${6}"
+printf '%s\n' "${5}"
+printf '%s\n' "${4}"
+printf '%s\n' "${7}"
+printf '%s\n' "${8}"
+printf '%s\n' "${9}"
+printf '%s\n' "${10}"
+printf '%s\n' "${11}"
+printf '%s\n' "${19}"
+printf '%s\n' "${12}"
+printf '%s\n' "${13}"
+printf '%s\n' "${14}"
+printf '%s\n' "${15}"
+printf '%s\n' "${16}"
+printf '%s\n' "${17}"
+printf '%s\n' "${18}"
+printf '%s\n' "${20}"
+EOT
+
+cat >argv20.expected_out <<'EOT'
+one
+two
+three
+six
+five
+four
+seven
+four times two
+nine
+ten
+eleven
+nineteen
+twelve
+ten and three
+fourteen
+fifteen
+sixteen
+seventeen
+eighteen
+twenty
+EOT
+
+set +e
+${TESTSH} argv20.sh one two three four five six seven "four times two" nine \
+          ten eleven twelve "ten and three" fourteen fifteen sixteen        \
+          seventeen eighteen nineteen twenty >argv20.out 2>argv20.err
+s=$?
+set -e
+echo "$s" >argv20.status
+
+"$BINDIR/check" --name argv20 --stdout argv20.expected_out
