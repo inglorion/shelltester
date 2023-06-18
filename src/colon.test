@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests :
+
+set -e
+. ./config
+
+cat >colon.sh <<'EOT'
+:
+: does nothing
+: "This doesn't do anything."
+EOT
+
+set +e
+${TESTSH} colon.sh >colon.out 2>colon.err
+s=$?
+set -e
+echo "$s" >colon.status
+
+"$BINDIR/check" --name colon

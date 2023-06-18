@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests $#.
+
+set -e
+. ./config
+
+cat >argc.sh <<'EOT'
+printf '%s\n' $#
+EOT
+
+printf '0\n1\n2\n' > argc.expected_out
+
+printf '' >argc.out
+printf '' >argc.err
+${TESTSH} argc.sh >>argc.out 2>>argc.err
+${TESTSH} argc.sh a >>argc.out 2>>argc.err
+${TESTSH} argc.sh "bee boo" 19 >>argc.out 2>>argc.err
+s=$?
+set -e
+echo "$s" >argc.status
+
+"$BINDIR/check" --name argc --stdout argc.expected_out

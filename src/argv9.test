@@ -1,0 +1,43 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests $1 through $9.
+
+set -e
+. ./config
+
+cat >argv9.sh <<'EOT'
+printf '%s\n' $1
+printf '%s\n' $9
+printf '%s\n' $2
+printf '%s\n' $3
+printf '%s\n' $4
+printf '%s\n' $5
+printf '%s\n' $6
+printf '%s\n' $7
+printf '%s\n' $8
+EOT
+
+cat >argv9.expected_out <<'EOT'
+one
+nine
+two
+three
+four
+five
+six
+seven
+eight
+EOT
+
+set +e
+${TESTSH} argv9.sh one two three four five six seven eight nine \
+          >argv9.out 2>argv9.err
+s=$?
+set -e
+echo "$s" >argv9.status
+
+"$BINDIR/check" --name argv9 --stdout argv9.expected_out
