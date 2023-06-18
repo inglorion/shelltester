@@ -1,0 +1,35 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that unquoted heredoc syntax is supported and that
+# parameter substitution and command substitution are performed
+# on the document.
+
+set -e
+. ./config
+
+cat >heredoc.sh <<'EOT'
+f=abc
+cat <<WORD
+some $f
+text `printf '%s' that`
+contains ${f} and WORD
+WORD
+EOT
+
+cat >heredoc.expected_out <<'EOT'
+some abc
+text that
+contains abc and WORD
+EOT
+
+set +e
+${TESTSH} heredoc.sh >heredoc.out 2>heredoc.err
+s=$?
+set -e
+echo "$s" >heredoc.status
+
+"$BINDIR/check" --name heredoc --stdout heredoc.expected_out
