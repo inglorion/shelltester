@@ -1,0 +1,92 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests the functionality of read without flags.
+
+set -e
+. ./config
+
+cat >read.sh <<'EOT'
+printf 'single value\n'
+read f
+printf '%s [%s]\n' $? "$f"
+
+printf 'two values\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'two values, separated by a tab\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'two values, separated by multiple space and tab characters\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'three variables, but only two values\n'
+read f g h
+printf '%s [%s] [%s] [%s]\n' $? "$f" "$g" "$h"
+
+printf 'should print [ten]\n'
+read f
+printf '%s [%s]\n' $? "$f"
+
+printf 'single variable, multiple values\n'
+read f
+printf '%s [%s]\n' $? "$f"
+
+printf 'two variables, four values\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'two variables, three values, extra whitespace\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+read f || printf 'at end of input\n'
+EOT
+
+cat >read.in <<'EOT'
+one
+two three
+four	five
+six  	 seven
+eight nine
+ten
+abc def
+one two three four
+a b  c  
+EOT
+
+cat >read.expected_out <<'EOT'
+single value
+0 [one]
+two values
+0 [two] [three]
+two values, separated by a tab
+0 [four] [five]
+two values, separated by multiple space and tab characters
+0 [six] [seven]
+three variables, but only two values
+0 [eight] [nine] []
+should print [ten]
+0 [ten]
+single variable, multiple values
+0 [abc def]
+two variables, four values
+0 [one] [two three four]
+two variables, three values, extra whitespace
+0 [a] [b  c]
+at end of input
+EOT
+
+set +e
+${TESTSH} read.sh <read.in >read.out 2>read.err
+s=$?
+set -e
+echo "$s" >read.status
+
+"$BINDIR/check" --name read --stdout read.expected_out

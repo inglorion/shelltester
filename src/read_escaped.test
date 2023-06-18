@@ -1,0 +1,56 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests read with backslashes in the data.
+#
+# According to The Open Group Base Specifications Issue 7, 2018 edition:
+#
+# "unless the -r option is specified, <backslash> shall act as an escape
+# character. An unescaped backslash shall preserve the literal value of
+# the following character, with the exception of a <newline>. If a
+# <newline> follows the backslash, the read utility shall interpret this
+# as line continuation.
+
+set -e
+. ./config
+
+cat >read_escaped.sh <<'EOT'
+printf 'two variables, one value\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'two variables, second value on next line\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'some escaped characters\n'
+read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+EOT
+
+cat >read_escaped.in <<'EOT'
+only\ one\ value
+two \
+values
+\ \"\$\\\	ok
+EOT
+
+cat >read_escaped.expected_out <<'EOT'
+two variables, one value
+0 [only one value] []
+two variables, second value on next line
+0 [two] [values]
+some escaped characters
+0 [ "$\	ok] []
+EOT
+
+set +e
+${TESTSH} read_escaped.sh <read_escaped.in >read_escaped.out 2>read_escaped.err
+s=$?
+set -e
+echo "$s" >read_escaped.status
+
+"$BINDIR/check" --name read_escaped --stdout read_escaped.expected_out

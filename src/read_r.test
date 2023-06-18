@@ -1,0 +1,54 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests read -r.
+
+set -e
+. ./config
+
+cat >read_r.sh <<'EOT'
+printf 'two variables, backslashes\n'
+read -r f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'two variables, backslash at end\n'
+read -r f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'should print [values]\n'
+read -r f
+printf '%s [%s]\n' $? "$f"
+
+printf 'some characters and backslashes\n'
+read -r f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+EOT
+
+cat >read_r.in <<'EOT'
+alpha\ beta\ gamma
+two \
+values
+\ \"\$\\\	ok
+EOT
+
+cat >read_r.expected_out <<'EOT'
+two variables, backslashes
+0 [alpha\] [beta\ gamma]
+two variables, backslash at end
+0 [two] [\]
+should print [values]
+0 [values]
+some characters and backslashes
+0 [\] [\"\$\\\	ok]
+EOT
+
+set +e
+${TESTSH} read_r.sh <read_r.in >read_r.out 2>read_r.err
+s=$?
+set -e
+echo "$s" >read_r.status
+
+"$BINDIR/check" --name read_r --stdout read_r.expected_out

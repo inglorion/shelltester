@@ -1,0 +1,68 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests the functionality of read with custom IFS.
+
+set -e
+. ./config
+
+cat >read_ifs.sh <<'EOT'
+printf 'single value\n'
+IFS='%' read f
+printf '%s [%s]\n' $? "$f"
+
+printf 'two values\n'
+IFS=':' read f g
+printf '%s [%s] [%s]\n' $? "$f" "$g"
+
+printf 'two separators\n'
+IFS=':-' read f g h
+printf '%s [%s] [%s] [%s]\n' $? "$f" "$g" "$h"
+
+printf 'delimiters at end\n'
+IFS='%-' read f
+printf '%s [%s]\n' $? "$f"
+
+printf 'delimiters after values\n'
+IFS='%-' read f
+printf '%s [%s]\n' $? "$f"
+
+printf 'IFS whitespace\n'
+IFS='	' read f
+printf '%s [%s]\n' $? "$f"
+EOT
+
+cat >read_ifs.in <<'EOT'
+abc def
+ghi jkl:uvw	xyz
+abc:def-ghi
+xyz-%
+xyz%-42-%
+xyz	42 	
+EOT
+
+cat >read_ifs.expected_out <<'EOT'
+single value
+0 [abc def]
+two values
+0 [ghi jkl] [uvw	xyz]
+two separators
+0 [abc] [def] [ghi]
+delimiters at end
+0 [xyz-%]
+delimiters after values
+0 [xyz%-42-%]
+IFS whitespace
+0 [xyz	42 ]
+EOT
+
+set +e
+${TESTSH} read_ifs.sh <read_ifs.in >read_ifs.out 2>read_ifs.err
+s=$?
+set -e
+echo "$s" >read_ifs.status
+
+"$BINDIR/check" --name read_ifs --stdout read_ifs.expected_out
