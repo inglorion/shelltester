@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that the shell can run an external program..
+
+set -e
+. ./config
+
+cat >run_cmd.sh <<EOT
+"$BINDIR/show_args"
+EOT
+
+printf "args:\n" > run_cmd.expected_out
+
+set +e
+${TESTSH} run_cmd.sh >run_cmd.out 2>run_cmd.err
+s=$?
+set -e
+echo "$s" >run_cmd.status
+
+"$BINDIR/check" --name run_cmd --stdout run_cmd.expected_out

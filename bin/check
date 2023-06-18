@@ -1,0 +1,103 @@
+#! /bin/sh
+
+set -e
+
+name=''
+expected_status=0
+expected_out=/dev/null
+expected_err=/dev/null
+failed=0
+findings=""
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --name)
+            shift
+            name="$1"
+            ;;
+        --status)
+            shift
+            expected_status="$1"
+            ;;
+        --stderr)
+            shift
+            expected_err="$1"
+            ;;
+        --stdout)
+            shift
+            expected_out="$1"
+            ;;
+        *)
+            printf 'Unknown option: %s\n' "$1" >&2
+            exit 128
+            ;;
+    esac
+    shift
+done
+
+if [ -z "$name" ]; then
+    printf "%s\n" "--name is required" >&2
+    exit 128
+fi
+
+status="$(cat "$name.status")"
+
+if [ "$expected_err" != "any" ]; then
+    if [ "$expected_err" = "nonempty" ]; then
+        err="$(cat "$name.err")"
+        if [ -z "$err" ]; then
+            failed=1
+            findings="$(printf "%s\n\n%s\n%s"                  \
+                "$findings"                                    \
+                "error output does not match expected output"  \
+                "error output was empty, expected nonempty")"
+        fi
+    else
+        err_diff="$(diff -u "$expected_err" "$name.err" || true)"
+        if [ -n "$err_diff" ]; then
+            failed=1
+            findings="$(printf "%s\n\n%s\n%s"                  \
+                "$findings"                                    \
+                "error output does not match expected output"  \
+                "$err_diff")"
+        fi
+    fi
+fi
+
+if [ "$expected_out" != "any" ]; then
+    out_diff="$(diff -u "$expected_out" "$name.out" || true)"
+    if [ -n "$out_diff" ]; then
+        failed=1
+        findings="$(printf "%s\n\n%s\n%s"                  \
+            "$findings"                                    \
+            "output does not match expected output"        \
+            "$out_diff")"
+    fi
+fi
+
+if [ "$expected_status" != "any" ]; then
+    status_ok=0
+    if [ "$expected_status" = "nonzero" ]; then
+        if [ "$status" -ne 0 ]; then
+            status_ok=1
+        fi
+    elif [ "$status" -eq "$expected_status" ]; then
+        status_ok=1
+    fi
+    if [ "$status_ok" -eq 0 ]; then
+        failed=1
+        findings="$(printf "%s\n\n%s%s%s%s"                \
+            "$findings"                                    \
+            "exited with status "                          \
+            "$status"                                      \
+            ", expected "                                  \
+            "$expected_status")"
+    fi
+fi
+
+if [ "$failed" -eq 0 ]; then
+    result=pass
+else
+    result=FAIL
+fi
+
+printf "%s%s\n" "$result" "$findings" > "$name.result"

@@ -1,0 +1,33 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that the shell can handle having the script start with
+# a shebang line.
+
+set -e
+. ./config
+
+# Set abs_testsh to the absolute path for $TESTSH
+case "$TESTSH" in
+    /*) abs_testsh="$TESTSH" ;;
+    *) abs_testsh="$PWD/$TESTSH" ;;
+esac
+
+cat >shebang.sh <<EOT
+#! $abs_testsh
+
+"$BINDIR/show_args"
+EOT
+
+printf "args:\n" > shebang.expected_out
+
+set +e
+${TESTSH} shebang.sh >shebang.out 2>shebang.err
+s=$?
+set -e
+echo "$s" >shebang.status
+
+"$BINDIR/check" --name shebang --stdout shebang.expected_out

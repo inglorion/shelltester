@@ -1,0 +1,8 @@
+Shell Tester is a test suite for Bourne-compatible shells.
+It consists of a number shell scripts that are expected to be
+run under a known-good shell. Each script invokes the shell
+being tested with a script and possibly some input or files.
+It captures the standard output, standard error, and exit
+status of the shell being tested, then compares those to
+the expected values.
+

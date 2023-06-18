@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that a simple printf invocation from the shell works.
+
+set -e
+. ./config
+
+cat >printf_simple.sh <<EOT
+printf %s hello
+EOT
+
+printf "hello" > printf_simple.expected_out
+
+set +e
+${TESTSH} printf_simple.sh >printf_simple.out 2>printf_simple.err
+s=$?
+set -e
+echo "$s" >printf_simple.status
+
+"$BINDIR/check" --name printf_simple --stdout printf_simple.expected_out

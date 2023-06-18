@@ -1,0 +1,14 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Prints the arguments that were passed in.
+
+printf 'args:\n'
+while [ $# -gt 0 ]
+do
+    printf '%s\n' "$1"
+    shift
+done

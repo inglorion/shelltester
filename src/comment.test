@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that the shell can handle comments.
+
+set -e
+. ./config
+
+cat >comment.sh <<EOT
+# This is a comment.
+
+"$BINDIR/show_args"
+# And another comment.
+EOT
+
+printf "args:\n" > comment.expected_out
+
+set +e
+${TESTSH} comment.sh >comment.out 2>comment.err
+s=$?
+set -e
+echo "$s" >comment.status
+
+"$BINDIR/check" --name comment --stdout comment.expected_out

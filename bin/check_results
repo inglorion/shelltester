@@ -1,0 +1,36 @@
+#! /bin/sh
+
+set -e
+
+# Number of tests run.
+tests_run=0
+
+# Number of tests passed.
+tests_passed=0
+
+for x in *.result; do
+    tests_run="$(expr "$tests_run" + 1)"
+    result="$(head -n 1 "$x")"
+    if [ "$result" = "pass" ]; then
+        tests_passed="$(expr "$tests_passed" + 1)"
+    else
+        printf "%s..." "$(basename "$x" .result)"
+        cat "$x"
+    fi
+done
+
+if [ "$tests_run" -eq "$tests_passed" ]; then
+    s=s
+    [ "$tests_run" -ne 1 ] || s=""
+    printf "All tests passed (%s test%s run)\n" "$tests_run" "$s"
+    exit 0
+else
+    tests_failed="$(expr "$tests_run" - "$tests_passed")"
+    run_s=s
+    [ "$tests_run" -ne 1 ] || run_s=""
+    failed_s=s
+    [ "$tests_failed" -ne 1 ] || failed_s=""
+    printf "%s test%s failed (%s test%s run)\n" \
+           "$tests_failed" "$failed_s" "$tests_run" "$run_s"
+    exit 2
+fi

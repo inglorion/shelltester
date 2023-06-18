@@ -1,0 +1,130 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Creates config and Makefile.
+#
+# The script requires the following command line arguments:
+#
+#   --shell-to-test <path>
+#
+# This specifies the path of the shell to be tested.
+#
+# If the configure script is run inside a directory other than
+# the directory where it is located, the config file and Makefile
+# are created in that directory.
+#
+# If the configure script is run inside the directory where it
+# is located, a directory "out" is created if it does not already
+# exist, and the configure script is re-run in there. Then, a
+# Makefile is created in the currect directory which
+# effectively cd's into the out directory and invokes the
+# Makefile there.
+
+set -e
+
+goodsh=/bin/sh
+
+# Parse command line arguments.
+testsh=""
+while [ $# -gt 0 ]
+do
+    if [ "$1" = "--shell-to-test" ]
+    then
+        if [ $# -lt 2 ]
+        then
+            printf "missing value for --shell-to-test\n" >&2
+            exit 2
+        fi
+        shift
+        testsh="$1"
+    else
+        printf "unknown parameter: %s\n" "$1" >&2
+        exit 2
+    fi
+    shift
+done
+
+if [ -z "$testsh" ]
+then
+    printf "missing required argument --shell-to-test\n" >&2
+    exit 2
+fi
+
+srcdir="$(dirname "$0")"
+if [ "$srcdir" = "." -o "$srcdir" = "" ]
+then
+    # configure is being run in the sourc directory.
+    # Create the out directory, re-run configure from there,
+    # and create a Makefile in the source directory so that
+    # running make from there works.
+
+    # If testsh is not absolute, make it absolute.
+    case "$testsh" in
+        /*) true ;;
+        *) testsh="$PWD/$testsh" ;;
+    esac
+    mkdir -p out
+    cd out
+    ../configure --shell-to-test "$testsh"
+    cd ..
+    cat >Makefile <<'EOT'
+all :
+	$(MAKE) -C out all
+
+check :
+	$(MAKE) -C out check
+
+clean :
+	$(MAKE) -C out clean
+
+distclean :
+	$(MAKE) -C out distclean
+	rm -fr out
+
+.PHONY : all check clean distclean
+EOT
+    exit
+fi
+
+# Enumerate tests.
+tests=""
+for x in "$srcdir/src/"*.test
+do
+    name="$(basename "$x" .test)"
+    tests="$tests $name"
+    test_targets="$(printf "%s %s\n\t%s" "$tests" \\ "$name")"
+done
+
+bindir="$srcdir/bin"
+cat >config <<EOT
+TESTSH="$testsh"
+BINDIR="$bindir"
+EOT
+
+cat >Makefile <<EOT
+all :
+
+check : ${test_targets}
+	@$goodsh "${bindir}/check_results"
+
+clean :
+
+distclean : clean
+
+.PHONY : all check clean distclean
+EOT
+
+for test in $tests
+do
+    cat >>Makefile <<EOT
+
+.PHONY : ${test}
+${test} :
+	@printf "%s\n" "$test"
+	@printf 'UNFINISHED\n' > "$test.result"
+	@$goodsh ${srcdir}/src/${test}.test
+EOT
+done
