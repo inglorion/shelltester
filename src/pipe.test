@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests piping the output of one command to another.
+
+set -e
+. ./config
+
+cat >pipe.sh <<EOT
+printf 'abc\\nxyz\\ndef\\nxabc\\n' | ${BINDIR}/xlines
+EOT
+
+printf 'xyz\nxabc\n' > pipe.expected_out
+
+set +e
+${TESTSH} pipe.sh >pipe.out 2>pipe.err
+s=$?
+set -e
+echo "$s" >pipe.status
+
+"$BINDIR/check" --name pipe --stdout pipe.expected_out

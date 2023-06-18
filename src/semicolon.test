@@ -1,0 +1,25 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that commands separated by semicolons are executed
+# sequentially.
+
+set -e
+. ./config
+
+cat >semicolon.sh <<'EOT'
+g=abc; printf '%s\n' "$g"; g=def; printf '%s\n' "$g"
+EOT
+
+printf 'abc\ndef\n' > semicolon.expected_out
+
+set +e
+${TESTSH} semicolon.sh >semicolon.out 2>semicolon.err
+s=$?
+set -e
+echo "$s" >semicolon.status
+
+"$BINDIR/check" --name semicolon --stdout semicolon.expected_out

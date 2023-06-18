@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that subshell variables are separate from same-named
+# variables outside the subshell.
+
+set -e
+. ./config
+
+cat >subshell.sh <<'EOT'
+g=foo
+(g=bar; printf 'subshell g: %s\n' "$g")
+printf 'outer g: %s\n' "$g"
+EOT
+
+printf 'subshell g: bar\nouter g: foo\n' > subshell.expected_out
+
+set +e
+${TESTSH} subshell.sh >subshell.out 2>subshell.err
+s=$?
+set -e
+echo "$s" >subshell.status
+
+"$BINDIR/check" --name subshell --stdout subshell.expected_out

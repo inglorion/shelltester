@@ -1,0 +1,16 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Reads lines from standard input and prints those that
+# start with the letter x.
+
+set -e
+while read line
+do
+    case "$line" in
+        x*) printf '%s\n' "$line" ;;
+    esac
+done
