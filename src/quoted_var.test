@@ -1,0 +1,31 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that a variable is expanded inside double-quoted strings.
+
+set -e
+. ./config
+
+cat >quoted_var.sh <<'EOT'
+myvar="xyz"
+printf '%s\n' "$myvar"
+printf '%s\n' "myvar: $myvar"
+printf '%s\n' "{ ${myvar}quoted }"
+EOT
+
+cat >quoted_var.expected_out <<'EOT'
+xyz
+myvar: xyz
+{ xyzquoted }
+EOT
+
+set +e
+${TESTSH} quoted_var.sh >quoted_var.out 2>quoted_var.err
+s=$?
+set -e
+echo "$s" >quoted_var.status
+
+"$BINDIR/check" --name quoted_var --stdout quoted_var.expected_out

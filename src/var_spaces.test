@@ -1,0 +1,45 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests the behavior of variables whose values contain whitespace.
+
+set -e
+. ./config
+
+cat >var_spaces.sh <<EOT
+# In assignments, whitespace resulting from parameter expansion does
+# not result in field splitting.
+f="abc def"
+g=\$f
+h=\${f}
+printf 'g: [%s]\n' "\$g"
+printf 'h: [%s]\n' "\$h"
+
+# Outside assignments, the results of parameter expansion are subject
+# to field splitting.
+${BINDIR}/show_args \$f
+${BINDIR}/show_args \${f}
+EOT
+
+cat >var_spaces.expected_out <<'EOT'
+g: [abc def]
+h: [abc def]
+args:
+abc
+def
+args:
+abc
+def
+EOT
+
+set +e
+${TESTSH} var_spaces.sh >var_spaces.out 2>var_spaces.err
+s=$?
+set -e
+set -e
+echo "$s" >var_spaces.status
+
+"$BINDIR/check" --name var_spaces --stdout var_spaces.expected_out

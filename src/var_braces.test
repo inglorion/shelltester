@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests parameter substitution with curly braces.
+
+set -e
+. ./config
+
+cat >var_braces.sh <<'EOT'
+foo="abc"
+foobar="xyz"
+printf '%s\n' ${foo}
+printf '%s\n' "${foo}bar"
+EOT
+
+printf 'abc\nabcbar\n' > var_braces.expected_out
+
+set +e
+${TESTSH} var_braces.sh >var_braces.out 2>var_braces.err
+s=$?
+set -e
+echo "$s" >var_braces.status
+
+"$BINDIR/check" --name var_braces --stdout var_braces.expected_out

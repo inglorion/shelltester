@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests a simple use of a variable.
+
+set -e
+. ./config
+
+cat >var_simple.sh <<'EOT'
+g="abc"
+printf '%s\n' $g
+EOT
+
+printf 'abc\n' > var_simple.expected_out
+
+set +e
+${TESTSH} var_simple.sh >var_simple.out 2>var_simple.err
+s=$?
+set -e
+set -e
+echo "$s" >var_simple.status
+
+"$BINDIR/check" --name var_simple --stdout var_simple.expected_out
