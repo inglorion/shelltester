@@ -1,0 +1,32 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that code can be sourced using the dot command.
+
+set -e
+. ./config
+
+cat >source.sh <<'EOT'
+f=abc
+. ./source.init
+printf '%s\n' "$f"
+EOT
+
+cat >source.init <<'EOT'
+f=xyz
+EOT
+
+cat >source.expected_out <<'EOT'
+xyz
+EOT
+
+set +e
+${TESTSH} source.sh >source.out 2>source.err
+s=$?
+set -e
+echo "$s" >source.status
+
+"$BINDIR/check" --name source --stdout source.expected_out
