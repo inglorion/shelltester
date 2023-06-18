@@ -1,0 +1,25 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests the line continuation sequence.
+
+set -e
+. ./config
+
+cat >line_cont.sh <<'EOT'
+printf '%s\n' continue\
+this
+EOT
+
+printf 'continuethis\n' > line_cont.expected_out
+
+set +e
+${TESTSH} line_cont.sh >line_cont.out 2>line_cont.err
+s=$?
+set -e
+echo "$s" >line_cont.status
+
+"$BINDIR/check" --name line_cont --stdout line_cont.expected_out

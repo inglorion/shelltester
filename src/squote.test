@@ -1,0 +1,25 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that characters that may have special meaning to the shell are
+# treated as literal characters when enclosed in single quotes.
+
+set -e
+. ./config
+
+cat >squote.sh <<'EOT'
+printf '%s\n' '	 !"#$%&()*+,-./:;<=>?@[]^_`~'
+EOT
+
+printf '%s\n' '	 !"#$%&()*+,-./:;<=>?@[]^_`~' > squote.expected_out
+
+set +e
+${TESTSH} squote.sh >squote.out 2>squote.err
+s=$?
+set -e
+echo "$s" >squote.status
+
+"$BINDIR/check" --name squote --stdout squote.expected_out

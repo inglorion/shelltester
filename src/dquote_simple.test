@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that characters that should be treated as literal characters
+# inside double quotes are indeed treated as literal characters.
+
+set -e
+. ./config
+
+cat >dquote_simple.sh <<'EOT'
+printf '%s\n' "	 !#%&'()*+,-./:;<=>?@[]^_~"
+EOT
+
+printf '%s%s%s\n' '	 !#%&' "'" '()*+,-./:;<=>?@[]^_~' \
+       > dquote_simple.expected_out
+
+set +e
+${TESTSH} dquote_simple.sh >dquote_simple.out 2>dquote_simple.err
+s=$?
+set -e
+echo "$s" >dquote_simple.status
+
+"$BINDIR/check" --name dquote_simple --stdout dquote_simple.expected_out

@@ -1,0 +1,25 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that single-quoted strings can contain backslashes,
+# and the shell does not interpret them specially.
+
+set -e
+. ./config
+
+cat >squote_backslash.sh <<'EOT'
+printf '%s\n' '\\\n\x20'
+EOT
+
+printf '\\\\\\n\\x20\n' > squote_backslash.expected_out
+
+set +e
+${TESTSH} squote_backslash.sh >squote_backslash.out 2>squote_backslash.err
+s=$?
+set -e
+echo "$s" >squote_backslash.status
+
+"$BINDIR/check" --name squote_backslash --stdout squote_backslash.expected_out
