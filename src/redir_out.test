@@ -1,0 +1,28 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that standard output can be redirected to a file and that
+# the file is truncated if it already exists.
+
+set -e
+. ./config
+
+cat >redir_out.sh <<'EOT'
+printf 'abc\n' >redir_out.txt
+printf 'def\n' >redir_out.txt
+printf '...\n'
+cat redir_out.txt
+EOT
+
+printf '...\ndef\n' > redir_out.expected_out
+
+set +e
+${TESTSH} redir_out.sh >redir_out.out 2>redir_out.err
+s=$?
+set -e
+echo "$s" >redir_out.status
+
+"$BINDIR/check" --name redir_out --stdout redir_out.expected_out

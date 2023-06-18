@@ -1,0 +1,32 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that standard input can be closed.
+
+set -e
+. ./config
+
+cat >close_in.sh <<'EOT'
+printf '...\n'
+cat <&- 2>/dev/null
+printf '...\n'
+cat
+EOT
+
+cat >close_in.in <<'EOT'
+some
+lines
+EOT
+
+printf '...\n...\nsome\nlines\n' > close_in.expected_out
+
+set +e
+${TESTSH} close_in.sh <close_in.in >close_in.out 2>close_in.err
+s=$?
+set -e
+echo "$s" >close_in.status
+
+"$BINDIR/check" --name close_in --stdout close_in.expected_out

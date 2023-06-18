@@ -1,0 +1,28 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that standard error can be redirected to a file and that
+# the file is truncated if it already exists.
+
+set -e
+. ./config
+
+cat >redir_err.sh <<EOT
+${BINDIR}/echo_err 'abc' 2>redir_err.txt
+${BINDIR}/echo_err 'def' 2>redir_err.txt
+printf '...\n'
+cat redir_err.txt
+EOT
+
+printf '...\ndef\n' > redir_err.expected_out
+
+set +e
+${TESTSH} redir_err.sh >redir_err.out 2>redir_err.err
+s=$?
+set -e
+echo "$s" >redir_err.status
+
+"$BINDIR/check" --name redir_err --stdout redir_err.expected_out

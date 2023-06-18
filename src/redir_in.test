@@ -1,0 +1,30 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that standard input can be connected to a file.
+
+set -e
+. ./config
+
+cat >redir_in.sh <<'EOT'
+printf '...\n'
+cat <redir_in.txt
+EOT
+
+cat >redir_in.txt <<'EOT'
+some
+lines
+EOT
+
+printf '...\nsome\nlines\n' > redir_in.expected_out
+
+set +e
+${TESTSH} redir_in.sh >redir_in.out 2>redir_in.err
+s=$?
+set -e
+echo "$s" >redir_in.status
+
+"$BINDIR/check" --name redir_in --stdout redir_in.expected_out

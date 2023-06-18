@@ -1,0 +1,18 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Writes all its arguments to standard error, separated by
+# spaces and followed by a newline.
+
+set -e
+sep=''
+while [ $# -gt 0 ]
+do
+    printf '%s%s' "$sep" "$1" >&2
+    sep=' '
+    shift
+done
+printf '\n' >&2

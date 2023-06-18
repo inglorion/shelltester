@@ -1,0 +1,31 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that standard output can be redirected to a file
+# in append mode and that this preserves existing content.
+
+set -e
+. ./config
+
+cat >redir_out_append.sh <<'EOT'
+printf 'abc\n' >>redir_out_append.txt
+printf 'def\n' >>redir_out_append.txt
+printf '...\n'
+cat redir_out_append.txt
+EOT
+
+printf '...\nabc\ndef\n' > redir_out_append.expected_out
+
+# Ensure the file does not exist before we run the test script.
+printf '' >redir_out_append.txt
+rm redir_out_append.txt
+set +e
+${TESTSH} redir_out_append.sh >redir_out_append.out 2>redir_out_append.err
+s=$?
+set -e
+echo "$s" >redir_out_append.status
+
+"$BINDIR/check" --name redir_out_append --stdout redir_out_append.expected_out

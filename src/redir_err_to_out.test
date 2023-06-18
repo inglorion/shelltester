@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that standard error can be directed to the original destination
+# of standard output, while standard output is directed to a file.
+
+set -e
+. ./config
+
+cat >redir_err_to_out.sh <<EOT
+(printf 'abc\n'; ${BINDIR}/echo_err 'xyz') 2>&1 >redir_err_to_out.txt
+printf '...\n'
+cat redir_err_to_out.txt
+EOT
+
+printf 'xyz\n...\nabc\n' > redir_err_to_out.expected_out
+
+set +e
+${TESTSH} redir_err_to_out.sh >redir_err_to_out.out 2>redir_err_to_out.err
+s=$?
+set -e
+echo "$s" >redir_err_to_out.status
+
+"$BINDIR/check" --name redir_err_to_out --stdout redir_err_to_out.expected_out

@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that both standard output and standard error can
+# be redirected to the same file by duplicating standard output.
+
+set -e
+. ./config
+
+cat >redir_out_err.sh <<EOT
+(printf 'abc\n'; ${BINDIR}/echo_err 'xyz') >redir_out_err.txt 2>&1
+cat redir_out_err.txt
+EOT
+
+printf 'abc\nxyz\n' > redir_out_err.expected_out
+
+set +e
+${TESTSH} redir_out_err.sh >redir_out_err.out 2>redir_out_err.err
+s=$?
+set -e
+echo "$s" >redir_out_err.status
+
+"$BINDIR/check" --name redir_out_err --stdout redir_out_err.expected_out
