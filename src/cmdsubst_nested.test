@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests nesting of command substitution using $(.
+
+set -e
+. ./config
+
+cat >cmdsubst_nested.sh <<'EOT'
+g=$(printf %s%s $(printf 'banana') s)
+printf '"%s"\n' "$g"
+EOT
+
+cat >cmdsubst_nested.expected_out <<'EOT'
+"bananas"
+EOT
+
+set +e
+${TESTSH} cmdsubst_nested.sh >cmdsubst_nested.out 2>cmdsubst_nested.err
+s=$?
+set -e
+echo "$s" >cmdsubst_nested.status
+
+"$BINDIR/check" --name cmdsubst_nested --stdout cmdsubst_nested.expected_out
