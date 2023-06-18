@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests $?.
+
+set -e
+. ./config
+
+cat >status.sh <<EOT
+$BINDIR/true
+printf '%s\n' \$?
+$BINDIR/false
+printf '%s\n' \$?
+EOT
+
+printf '0\n1\n' > status.expected_out
+
+set +e
+${TESTSH} status.sh >status.out 2>status.err
+s=$?
+set -e
+echo "$s" >status.status
+
+"$BINDIR/check" --name status --stdout status.expected_out

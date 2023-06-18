@@ -1,0 +1,10 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Exits with exit code 0.
+
+exit 0
+
