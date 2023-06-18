@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests the short-circuit && operator.
+
+set -e
+. ./config
+
+cat >and.sh <<EOT
+printf 'foo\\n' && printf 'bar\\n'
+$BINDIR/false && printf 'baz\\n'
+printf 'done\n'
+EOT
+
+printf 'foo\nbar\ndone\n' > and.expected_out
+
+set +e
+${TESTSH} and.sh >and.out 2>and.err
+s=$?
+set -e
+echo "$s" >and.status
+
+"$BINDIR/check" --name and --stdout and.expected_out

@@ -1,0 +1,24 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that exit with no arguments exits with status 0.
+
+set -e
+. ./config
+
+cat >exit.sh <<'EOT'
+exit
+EOT
+
+printf '' > exit.expected_out
+
+set +e
+${TESTSH} exit.sh >exit.out 2>exit.err
+s=$?
+set -e
+echo "$s" >exit.status
+
+"$BINDIR/check" --name exit --stdout exit.expected_out

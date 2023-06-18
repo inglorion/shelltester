@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that exit with an argument exits with that argument
+# as the exit code.
+
+set -e
+. ./config
+
+cat >exit12.sh <<'EOT'
+exit 12
+EOT
+
+printf '' > exit12.expected_out
+printf '12\n' > exit12.expected_status
+
+set +e
+${TESTSH} exit12.sh >exit12.out 2>exit12.err
+s=$?
+set -e
+echo "$s" >exit12.status
+
+"$BINDIR/check" --name exit12 --stdout exit12.expected_out --status 12
