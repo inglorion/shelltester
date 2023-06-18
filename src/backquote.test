@@ -1,0 +1,37 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests command substitution using backquotes.
+
+set -e
+. ./config
+
+cat >backquote.sh <<'EOT'
+g=`printf banana`
+# In assignments, whitespace resulting from command substitution
+# does not result in field splitting.
+h=`printf 'green apple '`
+# Command substitution removes trailing newlines.
+l=`printf 'orange\n'`
+
+printf 'g: "%s"\n' "$g"
+printf 'h: "%s"\n' "$h"
+printf 'l: "%s"\n' "$l"
+EOT
+
+cat >backquote.expected_out <<'EOT'
+g: "banana"
+h: "green apple "
+l: "orange"
+EOT
+
+set +e
+${TESTSH} backquote.sh >backquote.out 2>backquote.err
+s=$?
+set -e
+echo "$s" >backquote.status
+
+"$BINDIR/check" --name backquote --stdout backquote.expected_out

@@ -1,0 +1,27 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests nesting of command substitution using backquotes.
+
+set -e
+. ./config
+
+cat >backquote_nested.sh <<'EOT'
+g=`printf %s%s \`printf banana\` s`
+printf '%s\n' "$g"
+EOT
+
+cat >backquote_nested.expected_out <<'EOT'
+bananas
+EOT
+
+set +e
+${TESTSH} backquote_nested.sh >backquote_nested.out 2>backquote_nested.err
+s=$?
+set -e
+echo "$s" >backquote_nested.status
+
+"$BINDIR/check" --name backquote_nested --stdout backquote_nested.expected_out

@@ -1,0 +1,37 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests the behavior of backslash inside backquotes.
+#
+# According to The Open Group Base Specifications Issue 7, 2018 edition:
+#
+# Within the backquoted style of command substitution, <backslash> shall
+# retain its literal meaning, except when followed by: '$', '`',
+# or <backslash>.
+
+set -e
+. ./config
+
+cat >backquote_backslash.sh <<'EOT'
+f=`printf %s '\$\`\\'`
+printf '%s\n' "$f"
+g=`printf %s '\|\&\;\;\<\>\(\)\"\*\?\[\#\~\=\%\'`
+printf '%s\n' "$g"
+EOT
+
+cat >backquote_backslash.expected_out <<'EOT'
+$`\
+\|\&\;\;\<\>\(\)\"\*\?\[\#\~\=\%\
+EOT
+
+set +e
+${TESTSH} backquote_backslash.sh >backquote_backslash.out \
+          2>backquote_backslash.err
+s=$?
+set -e
+echo "$s" >backquote_backslash.status
+
+"$BINDIR/check" --name backquote_backslash --stdout backquote_backslash.expected_out
