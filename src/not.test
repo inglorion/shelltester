@@ -1,0 +1,28 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that an exclamation mark inverts the exit status
+# of a command.
+
+set -e
+. ./config
+
+cat >not.sh <<EOT
+${BINDIR}/false || printf 'false\\n'
+! ${BINDIR}/false || printf 'not false\\n'
+${BINDIR}/true || printf 'true\\n'
+! ${BINDIR}/true || printf 'not true\\n'
+EOT
+
+printf 'false\nnot true\n' >not.expected_out
+
+set +e
+${TESTSH} not.sh >not.out 2>not.err
+s=$?
+set -e
+echo "$s" >not.status
+
+"$BINDIR/check" --name not --stdout not.expected_out

@@ -1,0 +1,25 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that the exit status of the last command becomes the
+# exit code of the shell.
+
+set -e
+. ./config
+
+cat >return_last.sh <<EOT
+${BINDIR}/false
+EOT
+
+printf '1' >return_last.expected_status
+
+set +e
+${TESTSH} return_last.sh >return_last.out 2>return_last.err
+s=$?
+set -e
+echo "$s" >return_last.status
+
+"$BINDIR/check" --name return_last --status 1
