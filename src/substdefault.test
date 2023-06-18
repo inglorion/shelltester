@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests parameter substitution with default values.
+
+set -e
+. ./config
+
+cat >substdefault.sh <<'EOT'
+foo="abc"
+printf '%s\n' ${foo-xyz}
+printf '%s\n' ${foo}
+printf '%s\n' ${bar-xyz}
+printf '[%s]\n' ${bar}
+printf '[%s]\n' ${bar-}
+EOT
+
+printf 'abc\nabc\nxyz\n[]\n[]\n' > substdefault.expected_out
+
+set +e
+${TESTSH} substdefault.sh >substdefault.out 2>substdefault.err
+s=$?
+set -e
+echo "$s" >substdefault.status
+
+"$BINDIR/check" --name substdefault --stdout substdefault.expected_out

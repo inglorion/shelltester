@@ -1,0 +1,35 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests that the shell supports substitutions that abort when
+# the requested variable is unset.
+
+set -e
+. ./config
+
+cat >abortunset.sh <<'EOT'
+foo="abc"
+printf '%s\n' ${foo?}
+printf '%s\n' ${bar?}
+EOT
+
+printf 'abc\n' > abortunset.expected_out
+
+printf '' > abortunset.err
+set +e
+${TESTSH} abortunset.sh >abortunset.out 2>abortunset.err
+s=$?
+set -e
+echo "$s" >abortunset.status
+
+# The Open Group Base Specifications Issue 7, 2018 edition
+# specifies that the shell shall exit with a nonzero exit
+# status, but doesn't specify a specific value. Similarly,
+# it specifies that a message shall be written to standard
+# error, but does not specify the exact message.
+
+"$BINDIR/check" --name abortunset --stdout abortunset.expected_out \
+                --stderr nonempty --status nonzero

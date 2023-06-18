@@ -1,0 +1,63 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests nested parameter substitution.
+#
+# The Open Group Base Specifications Issue 7, 2018 edition
+# specifies that in cases where an alternate value is specified
+# in a substitution, this value shall be subjected to tilde
+# expansion, parameter expansion, command substitution, and
+# arithmetic expansion, but that if the value is not needed, it
+# shall not be expanded.
+#
+# The historic Bourne shell similarly specified that the alternate
+# value is not evaluated unless it is to be used.
+
+set -e
+. ./config
+
+cat >substnested.sh <<'EOT'
+f="abc"
+printf '%s\n' "${f-${g=1}}"
+printf '%s\n' "${f=${g=2}}"
+printf '%s\n' "${f?${g=3}}"
+printf '%s\n' "${f+${h=10}}"
+printf 'f: %s\n' "${f-unset}"
+printf 'g: %s\n' "${g-unset}"
+printf 'h: %s\n' "${h-unset}"
+printf '%s\n' "${k-${l=ell}}"
+printf '%s\n' "${k+${m=em}}"
+printf '%s\n' "${k=${e=ee}}"
+printf 'e: %s\n' "${e-unset}"
+printf 'k: %s\n' "${k-unset}"
+printf 'l: %s\n' "${l-unset}"
+printf 'm: %s\n' "${m-unset}"
+EOT
+
+cat >substnested.expected_out <<'EOT'
+abc
+abc
+abc
+10
+f: abc
+g: unset
+h: 10
+ell
+
+ee
+e: ee
+k: ee
+l: ell
+m: unset
+EOT
+
+set +e
+${TESTSH} substnested.sh >substnested.out 2>substnested.err
+s=$?
+set -e
+echo "$s" >substnested.status
+
+"$BINDIR/check" --name substnested --stdout substnested.expected_out

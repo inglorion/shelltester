@@ -1,0 +1,29 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests parameter substitution with alternative values.
+
+set -e
+. ./config
+
+cat >substalt.sh <<'EOT'
+foo="abc"
+printf '%s\n' ${foo+xyz}
+printf '[%s]\n' ${foo+}
+printf '%s\n' ${foo}
+printf '[%s]\n' ${bar+xyz}
+printf '[%s]\n' ${bar}
+EOT
+
+printf 'xyz\n[]\nabc\n[]\n[]\n' > substalt.expected_out
+
+set +e
+${TESTSH} substalt.sh >substalt.out 2>substalt.err
+s=$?
+set -e
+echo "$s" >substalt.status
+
+"$BINDIR/check" --name substalt --stdout substalt.expected_out
