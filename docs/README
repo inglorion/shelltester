@@ -1,8 +1,18 @@
 Shell Tester is a test suite for Bourne-compatible shells.
-It consists of a number shell scripts that are expected to be
-run under a known-good shell. Each script invokes the shell
-being tested with a script and possibly some input or files.
-It captures the standard output, standard error, and exit
-status of the shell being tested, then compares those to
-the expected values.
+It consists of a number of test cases, each of which runs
+a small program using the shell to be tested. The standard
+output, standard error, and exit status of the shell are
+recorded and compared to the expected values.
 
+How To Use
+
+To use shell tester, first run the configure script and
+tell it the shell to test:
+
+  ./configure --shell-to-test /bin/sh
+
+Then run ~make check~ to run the tests. You can use the -j
+option to make to run multiple tests in parallel. For
+example:
+
+  make -j 8 check
