@@ -1,0 +1,34 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests changing and tracking the working directory.
+
+set -e
+. ./config
+
+mkdir -p cd.dir
+
+cat >cd.sh <<'EOT'
+printf '[%s]\n' "$PWD"
+cd cd.dir
+printf '[%s]\n' "$PWD"
+cd ..
+printf '[%s]\n' "$PWD"
+EOT
+
+cat >cd.out_expected <<EOT
+[$PWD]
+[$PWD/cd.dir]
+[$PWD]
+EOT
+
+set +e
+${TESTSH} cd.sh >cd.out 2>cd.err
+s=$?
+set -e
+echo "$s" >cd.status
+
+"$BINDIR/check" --name cd --stdout cd.expected_out
