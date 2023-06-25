@@ -1,0 +1,50 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests patterns which do not match any files. The standard behavior
+# is that these are left unmodified (that is, the same result one would
+# get if all characters in the string were ordinary characters without
+# any special meaning for pattern matching).
+
+set -e
+. ./config
+
+mkdir -p glob_nomatch.dir
+mkdir -p glob_nomatch.dir/a
+printf '' >glob_nomatch.dir/a/a
+
+cat >glob_nomatch.sh <<'EOT'
+for f in a[/]a; do
+    printf '1 %s\n' "$f"
+done
+
+for f in x*; do
+    printf '2 %s\n' "$f"
+done
+
+for f in a[b-z]; do
+    printf '3 %s\n' "$f"
+done
+        
+for f in a?; do
+    printf '4 %s\n' "$f"
+done
+EOT
+
+cat >glob_nomatch.expected_out <<'EOT'
+1 a[/]a
+2 x*
+3 a[b-z]
+4 a?
+EOT
+
+set +e
+${TESTSH} glob_nomatch.sh 2>glob_nomatch.err | sort > glob_nomatch.out
+s=$?
+set -e
+echo "$s" >glob_nomatch.status
+
+"$BINDIR/check" --name glob_nomatch --stdout glob_nomatch.expected_out
