@@ -1,0 +1,83 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests glob patterns with * and ?.
+
+set -e
+. ./config
+
+mkdir -p glob.dir
+mkdir -p glob.dir/foz
+printf '' >glob.dir/foo
+printf '' >glob.dir/foo.txt
+printf '' >glob.dir/bar.txt
+
+cat >glob.sh <<'EOT'
+for f in glob.dir/*; do
+    printf '1 %s\n' "$f"
+done
+
+for f in glob.dir/*.txt; do
+    printf '2 %s\n' "$f"
+done
+
+for f in glob.dir/foo*; do
+    printf '3 %s\n' "$f"
+done
+
+for f in glob.dir/fo?; do
+    printf '4 %s\n' "$f"
+done
+
+cd glob.dir
+
+for f in *; do
+    printf '5 %s\n' "$f"
+done
+
+for f in *.txt; do
+    printf '6 %s\n' "$f"
+done
+
+for f in foo*; do
+    printf '7 %s\n' "$f"
+done
+
+for f in fo?; do
+    printf '8 %s\n' "$f"
+done
+EOT
+
+cat >glob.expected_out <<'EOT'
+1 glob.dir/bar.txt
+1 glob.dir/foo
+1 glob.dir/foo.txt
+1 glob.dir/foz
+2 glob.dir/bar.txt
+2 glob.dir/foo.txt
+3 glob.dir/foo
+3 glob.dir/foo.txt
+4 glob.dir/foo
+4 glob.dir/foz
+5 bar.txt
+5 foo
+5 foo.txt
+5 foz
+6 bar.txt
+6 foo.txt
+7 foo
+7 foo.txt
+8 foo
+8 foz
+EOT
+
+set +e
+${TESTSH} glob.sh 2>glob.err | sort > glob.out
+s=$?
+set -e
+echo "$s" >glob.status
+
+"$BINDIR/check" --name glob --stdout glob.expected_out
