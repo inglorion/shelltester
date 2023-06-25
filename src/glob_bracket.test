@@ -1,0 +1,49 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests glob patterns with bracket expressions.
+
+set -e
+. ./config
+
+mkdir -p glob_bracket.dir
+mkdir -p glob_bracket.dir/a
+printf '' >glob_bracket.dir/aaa
+printf '' >glob_bracket.dir/aba
+printf '' >glob_bracket.dir/ada
+printf '' >glob_bracket.dir/aha
+printf '' >glob_bracket.dir/a/a
+
+cat >glob_bracket.sh <<'EOT'
+cd glob_bracket.dir
+for f in a[b]a; do
+    printf '1 %s\n' "$f"
+done
+
+for f in a[adgx]a; do
+    printf '2 %s\n' "$f"
+done
+
+for f in a[b-e]a; do
+    printf '3 %s\n' "$f"
+done
+EOT
+
+cat >glob_bracket.expected_out <<'EOT'
+1 aba
+2 aaa
+2 ada
+3 aba
+3 ada
+EOT
+
+set +e
+${TESTSH} glob_bracket.sh 2>glob_bracket.err | sort > glob_bracket.out
+s=$?
+set -e
+echo "$s" >glob_bracket.status
+
+"$BINDIR/check" --name glob_bracket --stdout glob_bracket.expected_out
