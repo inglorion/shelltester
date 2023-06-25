@@ -1,0 +1,74 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests for loops over the contents of variables.
+
+set -e
+. ./config
+
+cat >for_variable.sh <<'EOT'
+e=''
+for f in $e; do
+    printf 'e [%s]\n' "$f"
+done
+
+for f in "$e"; do
+    printf '"e" [%s]\n' "$f"
+done
+
+g='foo'
+for f in $g; do
+    printf 'g [%s]\n' "$f"
+done
+
+h='one two three'
+for f in $h; do
+    printf 'h [%s]\n' "$f"
+done
+
+for f in "$h"; do
+    printf '"h" [%s]\n' "$f"
+done
+
+i='one "two three"'
+for f in $i; do
+    printf 'i [%s]\n' "$f"
+done
+
+for f in "$i"; do
+    printf '"i" [%s]\n' "$f"
+done
+
+j='abc:def ghi::'
+IFS=':'
+for f in $j; do
+    printf 'j [%s]\n' "$f"
+done
+EOT
+
+cat >for_variable.expected_out <<'EOT'
+"e" []
+g [foo]
+h [one]
+h [two]
+h [three]
+"h" [one two three]
+i [one]
+i ["two]
+i [three"]
+"i" [one "two three"]
+j [abc]
+j [def ghi]
+j []
+EOT
+
+set +e
+${TESTSH} for_variable.sh >for_variable.out 2>for_variable.err
+s=$?
+set -e
+echo "$s" >for_variable.status
+
+"$BINDIR/check" --name for_variable --stdout for_variable.expected_out

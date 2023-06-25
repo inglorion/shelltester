@@ -1,0 +1,32 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests for loops over literal tokens.
+
+set -e
+. ./config
+
+cat >for_tokens.sh <<'EOT'
+for x in abc "def ghi" 'j kl' \  ""; do
+    printf '[%s]\n' "$x"
+done
+EOT
+
+cat >for_tokens.expected_out <<'EOT'
+[abc]
+[def ghi]
+[j kl]
+[ ]
+[]
+EOT
+
+set +e
+${TESTSH} for_tokens.sh >for_tokens.out 2>for_tokens.err
+s=$?
+set -e
+echo "$s" >for_tokens.status
+
+"$BINDIR/check" --name for_tokens --stdout for_tokens.expected_out

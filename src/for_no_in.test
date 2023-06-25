@@ -1,0 +1,30 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests for loops without "in".
+
+set -e
+. ./config
+
+cat >for_no_in.sh <<'EOT'
+for a
+do
+    printf '[%s]\n' "$a"
+done
+EOT
+
+cat >for_no_in.expected_out <<'EOT'
+[abc]
+[def ghi]
+EOT
+
+set +e
+${TESTSH} for_no_in.sh abc "def ghi" >for_no_in.out 2>for_no_in.err
+s=$?
+set -e
+echo "$s" >for_no_in.status
+
+"$BINDIR/check" --name for_no_in --stdout for_no_in.expected_out

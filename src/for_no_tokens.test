@@ -1,0 +1,26 @@
+#! /bin/sh
+
+# Copyright (c) 2023 Robbert Haarman
+#
+# SPDX-License-Identifier: MIT
+#
+# Tests a for loop which is not given any tokens.
+
+set -e
+. ./config
+
+cat >for_no_tokens.sh <<'EOT'
+for x in; do
+    printf '[%s]\n' "$x"
+done
+EOT
+
+printf '' >for_no_tokens.expected_out
+
+set +e
+${TESTSH} for_no_tokens.sh >for_no_tokens.out 2>for_no_tokens.err
+s=$?
+set -e
+echo "$s" >for_no_tokens.status
+
+"$BINDIR/check" --name for_no_tokens --stdout for_no_tokens.expected_out
