@@ -19,7 +19,7 @@ cd ..
 printf '[%s]\n' "$PWD"
 EOT
 
-cat >cd.out_expected <<EOT
+cat >cd.expected_out <<EOT
 [$PWD]
 [$PWD/cd.dir]
 [$PWD]
